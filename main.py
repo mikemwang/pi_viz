@@ -1,6 +1,5 @@
 import os
 import pygame
-import pygame.gfxdraw
 from pygame.math import Vector2
 import time
 import timeit
@@ -8,6 +7,7 @@ import random
 
 
 class Actor:
+
     def __init__(self, pos: Vector2, vel: Vector2, radius, color):
         self.pos = pos
         self.vel = vel
