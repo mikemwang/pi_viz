@@ -7,21 +7,26 @@ import numpy as np
 class Actor:
 
     def __init__(self,
-                 pose: np.array,
+                 position: Vector2,
+                 velocity: Vector2,
                  length: float,
                  width: float,
-                 color=(0, 0, 0)):
-        self.pose = pose  # x, y, heading in radians
+                 color=(0, 0, 0),
+                 max_speed=200,
+                 max_acceleration=200):
+        self.position = position
+        self.velocity = velocity
+        self.acceleration = Vector2(0, 0)
         self.length = length
         self.width = width
         self.color = color
-        self.speed = 0  # cannot reverse, so no negative
-        self.steer = 0  # negative is left of centerline, right is positive
-        self.max_steer_radians = math.pi/4
-        self.max_steer_rate = math.pi/4  # radians / sec
-        self.max_speed = 35
         self.body_pts = None
         self.transformed_pts = None
+
+        self.max_speed = max_speed
+        self.max_speed_squared = self.max_speed**2
+        self.max_acceleration = max_acceleration  # lower = more "inertia"
+        self.max_acceleration_squared = self.max_acceleration**2
 
     def local_pts(self):
         """ Calculate all visualization points in the local coordinate system
@@ -34,44 +39,44 @@ class Actor:
 
         return self.body_pts
 
-    def rotate(self, pts, theta):
+    def rotate(self, pts, vec: Vector2):
+        theta = math.atan2(vec.y, vec.x)
         cos = math.cos(theta)
         sin = math.sin(theta)
 
         return np.array([[cos, -sin], [sin, cos]]).dot(pts.T).T
 
-    def translate(self, pts, delta):
+    def translate(self, pts, delta: Vector2):
         return pts + delta
 
-    def update(self, dt):
-        seconds = dt / 1000.0
+    def apply_force(self, force: Vector2, dt):
+        self.acceleration += force*dt
 
-        if self.steer != 0:
-            # positive if rightward steering
-            r = (self.length - self.width/3) / math.cos(math.pi/2 - self.steer)
+    def apply_velocity(self, dt):
+        self.velocity += self.acceleration*dt
 
-            # the origin of the steering circle is determined also by the
-            # heading of the car, i.e. pose[2]
-            c = np.array([[0, r]])
-            c = self.rotate(c, self.pose[2])
+        if self.velocity.length_squared() > self.max_speed_squared:
+            self.velocity.scale_to_length(self.max_speed)
+        self.position += self.velocity*dt
 
-        # we'll use the steer angle to create a circular path whose radius is
-        # infinite (i.e. no steering) when steer angle is 0
-        # and coincident with the center of the actor when steer angle is PI/2
+    def limit_acceleration(self):
+        if self.acceleration.length_squared() > self.max_acceleration_squared:
+            self.acceleration.scale_to_length(self.max_acceleration)
 
-        # TODO: apply acceleration to velocity
-        #self.pos += self.speed*self.heading*seconds
-        self.pose[2] += seconds
+    def update(self, dt_ms):
+        dt = dt_ms / 1000.0
+        self.apply_force(Vector2(-100000.0, 0), dt)
+        self.limit_acceleration()
+        self.apply_velocity(dt)
 
     def render(self, surface):
         self.transformed_pts = self.translate(
-            self.rotate(self.local_pts(), self.pose[2]), self.pose[:2])
+            self.rotate(self.local_pts(), self.velocity), self.position)
         pygame.draw.polygon(surface,
                             self.color,
                             [row for row in self.transformed_pts],
                             3)
-        pygame.draw.circle(surface,
-                           self.color,
-                           self.pose[0:2],
-                           3,
-                           0)
+
+    def animate(self, surface, dt_ms):
+        self.update(dt_ms)
+        self.render(surface)

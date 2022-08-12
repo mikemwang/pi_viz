@@ -47,8 +47,11 @@ class PiViz:
 
         clock = pygame.time.Clock()
         actors = []
-        actors.append(Actor(np.array([self.w/2, self.h/2, 0]),
-                            50, 25, (0, 255, 0)))
+
+        for val in [100, 200, 300, 400]:
+            actors.append(Actor(Vector2(self.w/2, self.h/2),
+                                Vector2(50.0, -50.0),
+                                20, 20, (0, 255, 0), max_acceleration=val))
 
         running = True
 
@@ -64,8 +67,7 @@ class PiViz:
             self.screen.fill((0, 0, 0))
 
             for actor in actors:
-                #actor.update(dt)
-                actor.render(self.screen)
+                actor.animate(self.screen, dt)
 
             pygame.display.flip()
 
