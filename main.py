@@ -97,7 +97,6 @@ class PiViz:
             for actor in actors:
                 actor.render(dt, self.screen)
 
-            # pygame.display.update(rects)
             pygame.display.flip()
 
 
