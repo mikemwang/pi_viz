@@ -1,16 +1,16 @@
 import os
 import pygame
+import pygame.gfxdraw
+from pygame.math import Vector2
 import time
 import timeit
 import random
 
 
 class Actor:
-    def __init__(self, x, y, vel_x, vel_y, radius, color):
-        self.x = x
-        self.y = y
-        self.v_x = vel_x
-        self.v_y = vel_y
+    def __init__(self, pos: Vector2, vel: Vector2, radius, color):
+        self.pos = pos
+        self.vel = vel
         self.r = radius
         self.color = color
         self.last_x = None
@@ -24,13 +24,11 @@ class Actor:
                                   self.r)
 
     def render(self, dt, surface):
-        box = pygame.draw.circle(surface, self.color, (self.x, self.y), self.r)
+        pygame.draw.circle(surface, self.color, (self.x, self.y), self.r)
         self.last_x = self.x
         self.last_y = self.y
         self.x += self.v_x * dt / 1000.0
         self.y += self.v_y * dt / 1000.0
-
-        return box
 
 
 class PiViz:
