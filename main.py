@@ -48,21 +48,17 @@ class PiViz:
         clock = pygame.time.Clock()
         actors = []
 
-        for val in [100, 200, 300, 400]:
-            actors.append(Actor(Vector2(self.w/2, self.h/2),
-                                Vector2(50.0, -50.0),
-                                20, 20, (0, 255, 0), max_acceleration=val))
+        for _ in range(10):
+            actors.append(Actor(self.screen, Vector2(0.75*self.w, 0.75*self.h),
+                                20, 20, (random.random()*255, random.random()*255, random.random()*255), max_acceleration=10+_*10))
 
         running = True
 
-        i = 0
-
-        while running and i < frames:
+        while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
             dt = clock.tick()
-            i += 1
 
             self.screen.fill((0, 0, 0))
 
