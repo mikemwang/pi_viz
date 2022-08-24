@@ -49,8 +49,8 @@ class PiViz:
         actors = []
 
         for _ in range(10):
-            actors.append(Actor(self.screen, Vector2(0.75*self.w, 0.75*self.h),
-                                20, 20, (random.random()*255, random.random()*255, random.random()*255), max_acceleration=10+_*10))
+            actors.append(Actor(self.screen, Vector2(1920*random.random(), 1080*random.random()),
+                                20, 20, (255, 255, 255), 100))
 
         running = True
 
@@ -63,7 +63,7 @@ class PiViz:
             self.screen.fill((0, 0, 0))
 
             for actor in actors:
-                actor.animate(self.screen, dt)
+                actor.animate(self.screen, dt, actors)
 
             pygame.display.flip()
 
